@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+/* Ripple effect */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple-anim 450ms linear;
+  background-color: rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+}
+
+@keyframes ripple-anim {
+  to {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+/* Bottom sheet / modal slide up */
+.animate-slide-up {
+  animation: slide-up 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

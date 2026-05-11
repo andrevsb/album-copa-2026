@@ -1,0 +1,24 @@
+{
+  "name": "Álbum Copa do Mundo 2026",
+  "short_name": "Álbum 2026",
+  "description": "Gerencie sua coleção Panini da Copa do Mundo FIFA 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

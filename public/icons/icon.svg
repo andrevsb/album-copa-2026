@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="goldH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" fill="#111827"/>
+
+  <!-- Star left (cx=152, cy=100, R=28, r=11) -->
+  <polygon fill="#fbbf24"
+    points="152,72 159.1,91.3 179.7,91.3 163.8,103.1 170.0,122.4 152,110.6 134.0,122.4 140.2,103.1 124.3,91.3 144.9,91.3"/>
+
+  <!-- Star center (cx=256, cy=84, R=34, r=13) -->
+  <polygon fill="#fde68a"
+    points="256,50 264.5,73.8 289.3,73.8 269.2,87.8 277.7,111.6 256,97.6 234.3,111.6 242.8,87.8 222.7,73.8 247.5,73.8"/>
+
+  <!-- Star right (cx=360, cy=100, R=28, r=11) -->
+  <polygon fill="#fbbf24"
+    points="360,72 367.1,91.3 387.7,91.3 371.8,103.1 378.0,122.4 360,110.6 342.0,122.4 348.2,103.1 332.3,91.3 352.9,91.3"/>
+
+  <!-- Cup body -->
+  <path d="M 178,148 L 334,148 Q 338,270 278,292 L 278,328 L 316,328 L 316,360 L 196,360 L 196,328 L 234,328 L 234,292 Q 174,270 178,148 Z"
+    fill="url(#gold)"/>
+
+  <!-- Left handle -->
+  <path d="M 178,172 C 116,172 100,210 100,226 C 100,258 128,272 178,268"
+    fill="none" stroke="url(#goldH)" stroke-width="24" stroke-linecap="round"/>
+
+  <!-- Right handle -->
+  <path d="M 334,172 C 396,172 412,210 412,226 C 412,258 384,272 334,268"
+    fill="none" stroke="url(#gold)" stroke-width="24" stroke-linecap="round"/>
+
+  <!-- Base -->
+  <rect x="152" y="360" width="208" height="40" rx="10" fill="url(#gold)"/>
+
+  <!-- Shine on cup -->
+  <path d="M 210,168 Q 220,220 218,260" fill="none" stroke="#fde68a" stroke-width="10" stroke-linecap="round" opacity="0.4"/>
+</svg>
