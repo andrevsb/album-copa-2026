@@ -97,6 +97,12 @@ CREATE TABLE collections (
 );
 
 ALTER PUBLICATION supabase_realtime ADD TABLE collections;
+
+-- Políticas de acesso (RLS) — obrigatório para acesso anônimo
+ALTER TABLE collections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Leitura pública"     ON collections FOR SELECT USING (true);
+CREATE POLICY "Inserção pública"    ON collections FOR INSERT WITH CHECK (true);
+CREATE POLICY "Atualização pública" ON collections FOR UPDATE USING (true) WITH CHECK (true);
 ```
 
 ### 4. Rodar em desenvolvimento
