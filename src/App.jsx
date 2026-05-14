@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { SECTIONS, COCA_SECTION, GROUP_ORDER, GROUP_LABELS, getSectionsByGroup } from './data/albumData'
-import { getOrCreateRoom, saveCollection, isSupabaseConfigured } from './lib/supabase'
+import { getOrCreateRoom, saveCollection, isSupabaseConfigured, hashPin, verifyPin, getCachedPinHash, cachePinHash } from './lib/supabase'
 import { useAlbum } from './hooks/useAlbum'
 import { SnackbarProvider } from './context/SnackbarContext'
 import RoomSetup from './components/RoomSetup'
@@ -11,6 +11,7 @@ import TradingList from './components/TradingList'
 import MissingList from './components/MissingList'
 import Footer from './components/Footer'
 import Onboarding from './components/Onboarding'
+import PinPrompt from './components/PinPrompt'
 
 const ONBOARDING_KEY = 'album-onboarding-done'
 
@@ -19,6 +20,7 @@ export default function App() {
   const [appReady, setAppReady] = useState(false)
   const [filter, setFilter] = useState('todas')
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [pinChallenge, setPinChallenge] = useState(null) // { room, code }
 
   const { collection, setSticker, decrementSticker, resetCollection, loadFromSupabase, loaded } = useAlbum(roomCode)
 
@@ -33,38 +35,85 @@ export default function App() {
     }
   }, [])
 
-  async function enterRoom(code, isNew = false) {
-    try {
-      const room = await getOrCreateRoom(code, isNew ? 'Copa do Mundo FIFA 2026' : undefined)
-      if (room && room.data && Object.keys(room.data).length > 0) {
-        // Supabase tem dados → remoto prevalece
-        loadFromSupabase(room.data)
-      } else if (room) {
-        // Supabase está vazio → verifica se há dados locais para sincronizar
-        try {
-          const localRaw = localStorage.getItem('album-copa-2026')
-          const localData = localRaw ? JSON.parse(localRaw) : {}
-          if (Object.keys(localData).length > 0) {
-            await saveCollection(code, localData)
-          }
-        } catch (e) {
-          console.warn('Sync local→Supabase falhou:', e)
+  // Finalizes room entry after PIN is verified (or skipped if no PIN)
+  async function finalizeEnterRoom(room, code) {
+    if (room && room.data && Object.keys(room.data).length > 0) {
+      loadFromSupabase(room.data)
+    } else if (room) {
+      try {
+        const localRaw = localStorage.getItem('album-copa-2026')
+        const localData = localRaw ? JSON.parse(localRaw) : {}
+        if (Object.keys(localData).length > 0) {
+          await saveCollection(code, localData)
         }
+      } catch (e) {
+        console.warn('Sync local→Supabase falhou:', e)
       }
-      setRoomCode(code)
-      const url = new URL(window.location.href)
-      url.searchParams.set('sala', code)
-      window.history.pushState({}, '', url)
-      setAppReady(true)
-      if (!localStorage.getItem(ONBOARDING_KEY)) setShowOnboarding(true)
+    }
+    setRoomCode(code)
+    const url = new URL(window.location.href)
+    url.searchParams.set('sala', code)
+    window.history.pushState({}, '', url)
+    setAppReady(true)
+    if (!localStorage.getItem(ONBOARDING_KEY)) setShowOnboarding(true)
+  }
+
+  async function enterRoom(code, isNew = false, plainPin = null) {
+    try {
+      let pinHash = null
+      if (isNew && plainPin) {
+        pinHash = await hashPin(plainPin)
+      }
+      const room = await getOrCreateRoom(code, isNew ? 'Copa do Mundo FIFA 2026' : undefined, pinHash)
+
+      // If a new room was created with a PIN, cache the hash locally
+      if (isNew && pinHash) {
+        cachePinHash(code, pinHash)
+      }
+
+      // Check if the existing room requires a PIN
+      if (room && room.pin) {
+        const cached = getCachedPinHash(code)
+        if (cached === room.pin) {
+          // Same device — skip prompt
+          await finalizeEnterRoom(room, code)
+          return
+        }
+        // Unknown device — show PIN prompt
+        setPinChallenge({ room, code })
+        return
+      }
+
+      await finalizeEnterRoom(room, code)
     } catch (err) {
       console.error('Erro ao entrar na sala:', err)
       alert('Não foi possível entrar na coleção. Verifique o código e tente novamente.')
     }
   }
 
-  async function handleEnterRoom(code, createNew = false) {
-    await enterRoom(code, createNew)
+  async function handlePinSubmit(enteredPin) {
+    if (!pinChallenge) return false
+    const { room, code } = pinChallenge
+    const ok = await verifyPin(room.pin, enteredPin)
+    if (ok) {
+      // Cache so this device doesn't prompt again
+      cachePinHash(code, room.pin)
+      setPinChallenge(null)
+      await finalizeEnterRoom(room, code)
+    }
+    return ok
+  }
+
+  function handlePinCancel() {
+    setPinChallenge(null)
+    // Go back to the setup screen
+    const url = new URL(window.location.href)
+    url.searchParams.delete('sala')
+    window.history.pushState({}, '', url)
+  }
+
+  async function handleEnterRoom(code, createNew = false, pin = null) {
+    await enterRoom(code, createNew, pin)
   }
 
   function handleOnboardingDone() {
@@ -92,6 +141,13 @@ export default function App() {
             if (!localStorage.getItem(ONBOARDING_KEY)) setShowOnboarding(true)
           }}
         />
+        {pinChallenge && (
+          <PinPrompt
+            roomName={pinChallenge.room?.name || pinChallenge.code}
+            onSubmit={handlePinSubmit}
+            onCancel={handlePinCancel}
+          />
+        )}
       </SnackbarProvider>
     )
   }

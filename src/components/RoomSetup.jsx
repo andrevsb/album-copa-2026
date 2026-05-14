@@ -1,6 +1,16 @@
 import { useState } from 'react'
 import { isSupabaseConfigured } from '../lib/supabase'
 
+function PinDots({ value }) {
+  return (
+    <div className="flex gap-3 justify-center my-1">
+      {[0, 1, 2, 3].map(i => (
+        <div key={i} className={`w-3 h-3 rounded-full transition-colors duration-150 ${i < value.length ? 'bg-amber-400' : 'bg-gray-600'}`} />
+      ))}
+    </div>
+  )
+}
+
 function toRoomId(str) {
   return str
     .toLowerCase()
@@ -15,16 +25,24 @@ export default function RoomSetup({ onEnterRoom, onLocalMode }) {
   const [mode, setMode] = useState('home')   // 'home' | 'create' | 'enter'
   const [name, setName]   = useState('')
   const [code, setCode]   = useState('')
+  const [pin, setPin]     = useState('')
   const [error, setError] = useState('')
   const supabaseReady = isSupabaseConfigured()
+
+  function handlePinInput(e) {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 4)
+    setPin(val)
+    setError('')
+  }
 
   function handleCreate(e) {
     e.preventDefault()
     const trimmed = name.trim()
     if (trimmed.length < 2) { setError('Digite pelo menos 2 caracteres.'); return }
+    if (pin && pin.length !== 4) { setError('O PIN deve ter exatamente 4 dígitos.'); return }
     const roomId = toRoomId(trimmed)
     if (!roomId) { setError('Nome inválido. Use letras e números.'); return }
-    onEnterRoom(roomId, true)
+    onEnterRoom(roomId, true, pin || null)
   }
 
   function handleEnter(e) {
@@ -76,24 +94,45 @@ export default function RoomSetup({ onEnterRoom, onLocalMode }) {
         ) : mode === 'create' ? (
           <div className="bg-gray-800 rounded-2xl p-6 space-y-4">
             <div>
-              <p className="text-white font-semibold mb-1">Nome da coleção</p>
-              <p className="text-gray-400 text-xs mb-3">Este nome vira o endereço para compartilhar. Ex: <span className="text-amber-400">familia-silva</span></p>
+              <p className="text-white font-semibold mb-1">Nova coleção</p>
+              <p className="text-gray-400 text-xs mb-3">Dê um nome para identificar e compartilhar. Ex: <span className="text-amber-400">familia-silva</span></p>
             </div>
-            <form onSubmit={handleCreate} className="space-y-3">
-              <input
-                autoFocus
-                type="text"
-                value={name}
-                onChange={e => { setName(e.target.value); setError('') }}
-                placeholder="familia-silva"
-                maxLength={40}
-                className="w-full bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
-              />
-              {name && (
-                <p className="text-xs text-gray-500">
-                  URL: <span className="text-amber-400 font-mono">?sala={toRoomId(name) || '...'}</span>
-                </p>
-              )}
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs text-gray-400 font-medium uppercase tracking-wide">Nome da coleção</label>
+                <input
+                  autoFocus
+                  type="text"
+                  value={name}
+                  onChange={e => { setName(e.target.value); setError('') }}
+                  placeholder="familia-silva"
+                  maxLength={40}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                />
+                {name && (
+                  <p className="text-xs text-gray-500 px-1">
+                    URL: <span className="text-amber-400 font-mono">?sala={toRoomId(name) || '...'}</span>
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-gray-400 font-medium uppercase tracking-wide">PIN de acesso <span className="text-gray-600 normal-case font-normal">(opcional)</span></label>
+                <div className="bg-gray-700/60 border border-gray-600 rounded-xl px-4 py-3 space-y-2">
+                  <PinDots value={pin} />
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={pin}
+                    onChange={handlePinInput}
+                    placeholder="4 dígitos"
+                    className="w-full bg-transparent text-center text-white placeholder-gray-600 text-lg tracking-[0.5em] focus:outline-none"
+                  />
+                </div>
+                <p className="text-xs text-gray-600 px-1">Se definir um PIN, quem abrir o link precisará digitá-lo.</p>
+              </div>
+
               {error && <p className="text-red-400 text-xs">{error}</p>}
               <button
                 type="submit"
@@ -101,7 +140,7 @@ export default function RoomSetup({ onEnterRoom, onLocalMode }) {
               >
                 Criar coleção
               </button>
-              <button type="button" onClick={() => { setMode('home'); setName(''); setError('') }}
+              <button type="button" onClick={() => { setMode('home'); setName(''); setPin(''); setError('') }}
                 className="w-full py-2 text-gray-500 hover:text-gray-300 text-sm transition-colors"
               >
                 Voltar
@@ -132,7 +171,7 @@ export default function RoomSetup({ onEnterRoom, onLocalMode }) {
               >
                 Entrar
               </button>
-              <button type="button" onClick={() => { setMode('home'); setCode(''); setError('') }}
+              <button type="button" onClick={() => { setMode('home'); setCode(''); setPin(''); setError('') }}
                 className="w-full py-2 text-gray-500 hover:text-gray-300 text-sm transition-colors"
               >
                 Voltar

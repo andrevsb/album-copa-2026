@@ -16,7 +16,32 @@ export function generateRoomCode() {
   return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }
 
-export async function getOrCreateRoom(code, name = '') {
+export async function hashPin(pin) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(pin)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+export async function verifyPin(storedHash, enteredPin) {
+  const hash = await hashPin(enteredPin)
+  return hash === storedHash
+}
+
+export function getPinCacheKey(code) {
+  return `album-pin-${code}`
+}
+
+export function getCachedPinHash(code) {
+  return localStorage.getItem(getPinCacheKey(code))
+}
+
+export function cachePinHash(code, hash) {
+  localStorage.setItem(getPinCacheKey(code), hash)
+}
+
+export async function getOrCreateRoom(code, name = '', pinHash = null) {
   if (!supabase) return null
   const { data, error } = await supabase
     .from('collections')
@@ -25,9 +50,11 @@ export async function getOrCreateRoom(code, name = '') {
     .single()
   if (error && error.code === 'PGRST116') {
     // não encontrado — criar
+    const insertPayload = { id: code, name, data: {} }
+    if (pinHash) insertPayload.pin = pinHash
     const { data: created, error: createErr } = await supabase
       .from('collections')
-      .insert({ id: code, name, data: {} })
+      .insert(insertPayload)
       .select()
       .single()
     if (createErr) throw createErr

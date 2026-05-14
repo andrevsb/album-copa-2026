@@ -28,6 +28,18 @@ body {
   }
 }
 
+/* PIN wrong — shake */
+.animate-shake {
+  animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+  10%, 90%  { transform: translateX(-2px); }
+  20%, 80%  { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60%  { transform: translateX(6px); }
+}
+
 /* Bottom sheet / modal slide up */
 .animate-slide-up {
   animation: slide-up 280ms cubic-bezier(0.32, 0.72, 0, 1);
