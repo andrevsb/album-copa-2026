@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { SECTIONS, COCA_SECTION, GROUP_ORDER, GROUP_LABELS, getSectionsByGroup } from './data/albumData'
-import { getOrCreateRoom, isSupabaseConfigured } from './lib/supabase'
+import { getOrCreateRoom, saveCollection, isSupabaseConfigured } from './lib/supabase'
 import { useAlbum } from './hooks/useAlbum'
 import { SnackbarProvider } from './context/SnackbarContext'
 import RoomSetup from './components/RoomSetup'
@@ -36,7 +36,21 @@ export default function App() {
   async function enterRoom(code, isNew = false) {
     try {
       const room = await getOrCreateRoom(code, isNew ? 'Copa do Mundo FIFA 2026' : undefined)
-      if (room && room.data && Object.keys(room.data).length > 0) loadFromSupabase(room.data)
+      if (room && room.data && Object.keys(room.data).length > 0) {
+        // Supabase tem dados → remoto prevalece
+        loadFromSupabase(room.data)
+      } else if (room) {
+        // Supabase está vazio → verifica se há dados locais para sincronizar
+        try {
+          const localRaw = localStorage.getItem('album-copa-2026')
+          const localData = localRaw ? JSON.parse(localRaw) : {}
+          if (Object.keys(localData).length > 0) {
+            await saveCollection(code, localData)
+          }
+        } catch (e) {
+          console.warn('Sync local→Supabase falhou:', e)
+        }
+      }
       setRoomCode(code)
       const url = new URL(window.location.href)
       url.searchParams.set('sala', code)
