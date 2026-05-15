@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { saveCollection, subscribeToRoom } from '../lib/supabase'
 
-const MAX_QTY = 2
+const MAX_QTY = 3
 const SAVE_DEBOUNCE_MS = 1000
 const LOCAL_KEY = 'album-copa-2026'
 

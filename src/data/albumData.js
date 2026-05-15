@@ -59,8 +59,8 @@ export const SECTIONS = [
   // Grupo I
   { id: 'FRA', name: 'França',   emoji: '🇫🇷', group: 'I', count: 20 },
   { id: 'SEN', name: 'Senegal',  emoji: '🇸🇳', group: 'I', count: 20 },
-  { id: 'NOR', name: 'Noruega',  emoji: '🇳🇴', group: 'I', count: 20 },
   { id: 'IRQ', name: 'Iraque',   emoji: '🇮🇶', group: 'I', count: 20 },
+  { id: 'NOR', name: 'Noruega',  emoji: '🇳🇴', group: 'I', count: 20 },
 
   // Grupo J
   { id: 'ARG', name: 'Argentina', emoji: '🇦🇷', group: 'J', count: 20 },
