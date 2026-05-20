@@ -1,6 +1,6 @@
 import { useSnackbar } from '../context/SnackbarContext'
 import { shareList } from '../lib/share'
-import { SECTIONS, COCA_SECTION } from '../data/albumData'
+import { SECTIONS, COCA_SECTION, getSectionIds } from '../data/albumData'
 
 const ALL_SECTIONS = [...SECTIONS, COCA_SECTION]
 
@@ -20,8 +20,7 @@ export default function TradingList({ collection, onStickerTrade }) {
 
   const duplicates = []
   for (const section of ALL_SECTIONS) {
-    for (let i = 1; i <= section.count; i++) {
-      const id = `${section.id}-${i}`
+    for (const id of getSectionIds(section)) {
       const qty = collection[id] || 0
       if (qty >= 2) duplicates.push({ id, section })
     }

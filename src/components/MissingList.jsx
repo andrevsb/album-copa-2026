@@ -1,6 +1,6 @@
 import { useSnackbar } from '../context/SnackbarContext'
 import { shareList } from '../lib/share'
-import { SECTIONS, COCA_SECTION } from '../data/albumData'
+import { SECTIONS, COCA_SECTION, getSectionIds } from '../data/albumData'
 
 const WA_ICON = (
   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0">
@@ -14,7 +14,7 @@ export default function MissingList({ collection, showCoca }) {
 
   const missingBySection = []
   for (const section of allSections) {
-    const ids = Array.from({ length: section.count }, (_, i) => `${section.id}-${i + 1}`)
+    const ids = getSectionIds(section)
     const missing = ids.filter(id => !(collection[id] >= 1))
     if (missing.length > 0) missingBySection.push({ section, missing })
   }

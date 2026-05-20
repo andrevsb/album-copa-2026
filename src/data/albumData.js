@@ -1,8 +1,22 @@
-// Seção FWC — Introdução do álbum (todas foil)
-export const FWC_SECTION = { id: 'FWC', name: 'Introdução FWC', emoji: '✨', group: 'FWC', count: 20, foil: true }
+// Seção FWC — Introdução do álbum (todas foil). Numeradas de 00 a 19.
+export const FWC_SECTION = { id: 'FWC', name: 'Introdução FWC', emoji: '✨', group: 'FWC', count: 20, start: 0, pad: 2, foil: true }
 
-// Seção Coca-Cola — bônus, NÃO contabilizada no total oficial
-export const COCA_SECTION = { id: 'CC', name: 'Coca-Cola', emoji: '🥤', group: 'COCA', count: 12 }
+// Seção Coca-Cola — bônus, NÃO contabilizada no total oficial. Numeradas de 1 a 14.
+export const COCA_SECTION = { id: 'CC', name: 'Coca-Cola', emoji: '🥤', group: 'COCA', count: 14 }
+
+/**
+ * Gera os IDs canônicos de uma seção respeitando start e pad.
+ * - Padrão (times): start=1, sem padding → "BRA-1" … "BRA-20"
+ * - FWC: start=0, pad=2            → "FWC-00" … "FWC-19"
+ */
+export function getSectionIds(section) {
+  const start = section.start ?? 1
+  const pad   = section.pad   ?? 0
+  return Array.from({ length: section.count }, (_, i) => {
+    const num = start + i
+    return `${section.id}-${pad ? String(num).padStart(pad, '0') : num}`
+  })
+}
 
 // 48 seleções organizadas por grupo da Copa (conforme ordem oficial do álbum Panini)
 export const SECTIONS = [
@@ -99,17 +113,15 @@ export const GROUP_LABELS = {
   L:   'Grupo L',
 }
 
-// Total oficial: FWC (20) + 48 seleções × 20 = 980. Coca-Cola (12) excluída.
+// Total oficial: FWC (20) + 48 seleções × 20 = 980. Coca-Cola (14) excluída.
 export const TOTAL_STICKERS = SECTIONS.reduce((sum, s) => sum + s.count, 0)
 
 export function getAllStickerIds() {
-  return SECTIONS.flatMap(s =>
-    Array.from({ length: s.count }, (_, i) => `${s.id}-${i + 1}`)
-  )
+  return SECTIONS.flatMap(getSectionIds)
 }
 
 export function getCocaIds() {
-  return Array.from({ length: COCA_SECTION.count }, (_, i) => `CC-${i + 1}`)
+  return getSectionIds(COCA_SECTION)
 }
 
 export function getSectionsByGroup() {

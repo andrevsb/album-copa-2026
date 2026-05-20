@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { SECTIONS, COCA_SECTION, GROUP_ORDER, GROUP_LABELS, getSectionsByGroup } from './data/albumData'
+import { SECTIONS, COCA_SECTION, GROUP_ORDER, GROUP_LABELS, getSectionsByGroup, getSectionIds, getCocaIds } from './data/albumData'
 import { getOrCreateRoom, saveCollection, isSupabaseConfigured, hashPin, verifyPin, getCachedPinHash, cachePinHash } from './lib/supabase'
 import { useAlbum } from './hooks/useAlbum'
 import { SnackbarProvider } from './context/SnackbarContext'
@@ -122,13 +122,11 @@ export default function App() {
   }
 
   function getSectionVisible(section) {
-    const ids = Array.from({ length: section.count }, (_, i) => `${section.id}-${i + 1}`)
-    return ids.some(id => (collection[id] || 0) >= 1)
+    return getSectionIds(section).some(id => (collection[id] || 0) >= 1)
   }
 
   function getOwnedIds(section) {
-    const ids = Array.from({ length: section.count }, (_, i) => `${section.id}-${i + 1}`)
-    return ids.filter(id => (collection[id] || 0) >= 1)
+    return getSectionIds(section).filter(id => (collection[id] || 0) >= 1)
   }
 
   if (!appReady) {
@@ -196,7 +194,7 @@ export default function App() {
   // Todas / Tenho → accordion por grupo
   const isFilterTenho = filter === 'tenho'
 
-  const cocaIds = Array.from({ length: COCA_SECTION.count }, (_, i) => `CC-${i + 1}`)
+  const cocaIds = getCocaIds()
   const cocaOwned = cocaIds.filter(id => (collection[id] || 0) >= 1)
 
   // Estado vazio para "Tenho"

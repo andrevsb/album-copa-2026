@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import StickerGrid from './StickerGrid'
+import { getSectionIds } from '../data/albumData'
 
 export default function SectionGroup({ section, collection, onStickerClick, forceOpen, filteredIds }) {
   const [open, setOpen] = useState(false)
   const isOpen = forceOpen || open
 
-  const ids = Array.from({ length: section.count }, (_, i) => `${section.id}-${i + 1}`)
+  const ids = getSectionIds(section)
   const owned = ids.filter(id => (collection[id] || 0) >= 1).length
   const allDone = owned === section.count
 
@@ -39,8 +40,7 @@ export default function SectionGroup({ section, collection, onStickerClick, forc
 
       {isOpen && (
         <StickerGrid
-          sectionId={section.id}
-          count={section.count}
+          section={section}
           collection={collection}
           onStickerClick={onStickerClick}
           filteredIds={filteredIds}

@@ -1,7 +1,8 @@
 import StickerCard from './StickerCard'
+import { getSectionIds } from '../data/albumData'
 
-export default function StickerGrid({ sectionId, count, collection, onStickerClick, filteredIds }) {
-  const allIds = Array.from({ length: count }, (_, i) => `${sectionId}-${i + 1}`)
+export default function StickerGrid({ section, collection, onStickerClick, filteredIds }) {
+  const allIds = getSectionIds(section)
   const ids = filteredIds || allIds
 
   return (
